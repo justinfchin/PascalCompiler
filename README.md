@@ -1,2 +1,29 @@
 # PascalCompiler
-Pascal Compiler
+- written in Java
+- book used
+    - Crafting a Compiler by Fischer Cytron and LeBlanc
+## Background
+- Compiler.java
+    - main program used to compile your Pascal source code
+- Scanner.java
+    - aka lexical scanner
+    - reads source code and groups them into tokesn
+        - tokens are identifiers, integers, keywords, and delimeters
+    - eliminates unneeded info (like comments)
+    - Only Arithmetic and Relational Operators, no Bitwise or Boolean
+    - Notes:
+        - used HashMap instead of HashTable because did not need thread synchroniziation
+        - HashMap also allows for null 
+- Parser.java
+    - takes the encoded tokens (often as integers) for syntactic analysis
+    - 
+- TypeChecker.java
+    -
+- Translator.java
+    -
+- Optimizer.java
+    - for our purposes this was not used
+- CodeGenerator.java
+    -
+- SymbolTable.java
+    -
