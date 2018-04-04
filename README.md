@@ -5,15 +5,20 @@
 ## Background
 - Compiler.java
     - main program used to compile your Pascal source code
-- Scanner.java
-    - aka lexical scanner
-    - reads source code and groups them into tokesn
+- Lexer.java
+    - aka lexical analyzer, scanner, tokenzierr
+    - reads source code 1 char at a time and groups them into tokens
         - tokens are identifiers, integers, keywords, and delimeters
     - eliminates unneeded info (like comments)
     - Only Arithmetic and Relational Operators, no Bitwise or Boolean
     - Notes:
         - used HashMap instead of HashTable because did not need thread synchroniziation
         - HashMap also allows for null 
+- keywords.txt
+    - list of pascal keywords the compiler understands
+    - [list used](https://www.freepascal.org/docs-html/ref/refsu1.html)
+- Token.java
+    - class to create objects that have a type and a value
 - Parser.java
     - takes the encoded tokens (often as integers) for syntactic analysis
     - 
