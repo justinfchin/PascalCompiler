@@ -3,9 +3,9 @@
 - book used
     - Crafting a Compiler by Fischer Cytron and LeBlanc
 ## Background
-- Compiler.java
+### Compiler.java
     - main program used to compile your Pascal source code
-- Lexer.java
+### Lexer.java
     - aka lexical analyzer, scanner, tokenzierr
     - reads source code 1 char at a time and groups them into tokens
         - tokens are identifiers, integers, keywords, and delimeters
@@ -14,21 +14,21 @@
     - Notes:
         - used HashMap instead of HashTable because did not need thread synchroniziation
         - HashMap also allows for null 
-- keywords.txt
+### keywords.txt
     - list of pascal keywords the compiler understands
     - [list used](https://www.freepascal.org/docs-html/ref/refsu1.html)
-- Token.java
+### Token.java
     - class to create objects that have a type and a value
-- Parser.java
+### Parser.java
     - takes the encoded tokens (often as integers) for syntactic analysis
     - 
-- TypeChecker.java
+### TypeChecker.java
     -
-- Translator.java
+### Translator.java
     -
-- Optimizer.java
+### Optimizer.java
     - for our purposes this was not used
-- CodeGenerator.java
+### CodeGenerator.java
     -
-- SymbolTable.java
+### SymbolTable.java
     -
