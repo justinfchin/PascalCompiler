@@ -26,6 +26,10 @@ public final class Compiler{
             System.out.println("Getting Your File...");
             // Convert the File to tokens and store in ArrayList
             ArrayList<Token> tkList = test.scan(new File(args[0]));
+            // Print tklist
+            for (Token tk : tkList){
+                System.out.println(tk.getTkType()+" "+tk.getTkValue());
+            }
         }
         catch(IOException e){
             System.out.println("Unable to find source code file...");

@@ -1,7 +1,7 @@
-/*
+/*c
  * Scanner Class to convert Pascal Source Code to Tokens
  *
- * @author Justin Chin:
+ * @author Justin Chin
  * @since 2018.04.03
  */
 
@@ -15,68 +15,37 @@ public final class Lexer {
 
     private static int col = 0;
     private static int row = 0;
-    private static String tkType = "";
     private static String tkValue = "";
     private static ArrayList<Token> tkList = new ArrayList<Token>();
+    private static boolean isReal = false;
+    private static State currState = State.SOTHER;
+    //---------------------------------------------
+    // ENUMS
+    // -------------------------------------------
 
-    /*
-     * Method called to scan a file 
+    /* 
+     * FSM STATES
      *
-     * @param file a file
-     * @return an arrayList of Tokens
+     * SSTRING = when we see a quote
+     * SNUMBER = when we see a number (integer vs real)
+     * SCOMMENT = when we see a (*, ignore till *)
+     * SOTHER = build tokens here
      */
-    
-    public static ArrayList<Token> scan(File file) throws IOException {
-        
-        Scanner input = new Scanner(file).useDelimiter(""); // remove delimiter;
-        while(input.hasNext()){
-            // convert to character
-            char element = input.next().charAt(0);
-            System.out.println("line"+" col"+" character");
-            System.out.println(row+" "+col+" "+element);
-            col += 1;
-            if (element == '\n'){
-                System.out.println("TRRUREUEU");
-                row += 1;
-                col = 0;
-            }
-            assignTK(element);
-            }
-
-        // Broke out of loop so EOF
-        
-
-        return tkList;
-    };
-
-
-    /*
-     * Assigns the Correct Token to the Character
-     *
-     * @param character char
-     * @returns 
-     */
-    public static void assignTK(char character){
-    
-        // Ignore Comments & Source Code formatting like blanks/tabs
+    private enum State {
+       SSTRING, SNUMBER, SCOMMENT, SOTHER
     }
 
     /*
-     * Creates Tokens and adds them the tkList
+     * CHARACTER TYPES
      *
-     * @param tkString String
+     * sfdf
      */
-    public static void createToken(String tkString){
-    
+    private enum Type {
+        WHITESPACE, OPERATOR, NUMBER, DOT,SEMI,EQUALS,LETTER, EOF, QUOTE, STAR, PAREN
+        
     }
 
-    //---------
-    // TABLES
-    //
-    // Create & Populate a static final HashTable 
-    //---------
-    
-    // OPERATORS
+    // OPERATORS -----------------------------------
     private static final HashMap<String,String> TK_OPERATORS;
     static {
         TK_OPERATORS = new HashMap<String,String>();
@@ -100,8 +69,307 @@ public final class Lexer {
         TK_OPERATORS.put(":","TK_COLON");
         TK_OPERATORS.put(";","TK_SEMICOLON");
     };
+    //----------------------------------------------
+    // PUBLIC METHODS
+    //----------------------------------------------
 
-    // KEYWORDS from txt file
+    /*
+     * Method called to scan a file 
+     *
+     * @param file a pascal file
+     * @return an arrayList of Tokens
+     */
+    
+    public static ArrayList<Token> scan(File file) throws IOException {
+        
+        Scanner input = new Scanner(file).useDelimiter(""); // remove delimiter;
+        // Loop through each char until there is no more
+        while(input.hasNext()){
+            
+            // convert to character
+            String element = String.valueOf(input.next().charAt(0));
+           // System.out.println("row"+" col"+" character");
+            System.out.println(row+" "+col+" "+element);
+            col += 1;
+            if (element.equals("\n")){
+                row += 1;
+                col = 0;
+            }
+            
+            // handle character depending on the state
+            switch (currState){
+                case SSTRING:
+                    handleString(element);
+                    break;
+                case SNUMBER:
+                    handleNumber(element);
+                    break;
+                case SCOMMENT:
+                    handleComment(element);
+                    break;
+                default:
+                    // SOTHER
+                    handleOther(element);
+                    break;
+            }
+        }
+
+        // Broke out of loop so EOF
+
+        return tkList;
+    }
+
+
+    /*
+     * Clears Info After Assigning Token
+     *
+     */
+    public static void clear(){
+        tkValue = "";    
+    }
+
+    /*
+     * Creates Tokens and adds them the tkList
+     *
+     * @param tkString String
+     */
+    public static void createTk(String tkString){
+        Token tk = new Token(tkString, tkValue, col, row);
+        tkList.add(tk);
+        System.out.println(tkString);
+        clear();
+    }
+
+    //----------------------------------------------
+    // STATE HANDLING METHODS
+    //----------------------------------------------
+
+    /*
+     * Handles String State
+     * checks the kind of element in the table
+     *
+     * @param char element
+     * 
+     */
+    public static void handleString(String element){
+        switch (CHARACTER_TYPE.get(element)){
+            case QUOTE:
+                // end string building
+                tkValue += element;
+                createTk("TK_STRING");
+                currState = State.SOTHER;
+                break;
+            default:
+                // continue string building
+                tkValue += element;
+                break;
+        }
+    }
+    
+    
+    /*
+     * Handles Number State
+     *
+     * @param char element
+     *
+     */
+    public static void handleNumber(String element){
+        switch(CHARACTER_TYPE.get(element)){
+            case NUMBER:
+                // continue number building
+                tkValue += element;
+                break;
+            case OPERATOR:
+                if (element.equals(".")){
+                // real number building
+                tkValue += element;
+                isReal = true;
+                break;
+                }
+            default:
+                // end number building
+                currState = State.SOTHER;
+                if (isReal)
+                    createTk("TK_REAL");
+                else
+                    createTk("TK_INTEGER");
+                break;
+
+        }
+    }
+
+
+
+    /*
+     * Handles Comment State
+     *
+     * @param char element
+     */
+    public static void handleComment(String element){
+        switch(CHARACTER_TYPE.get(element)){
+            case OPERATOR:
+                if (element.equals("*")){
+                // signals possible comment end
+                tkValue = "TK_TIMES";
+                break;
+                }
+            case PAREN:
+                // end comment building
+                if (!tkValue.equals("")){ 
+                    currState = State.SOTHER;
+                    createTk("TK_COMMENT");
+                }    
+                break;
+            default:
+                // continue comment building
+                tkValue += element;
+                break;
+        }
+    }
+
+
+    /*
+     * Handles Other State
+     *
+     * @param char element
+     */
+    public static void handleOther(String element){
+        System.out.println(CHARACTER_TYPE.get(element));
+        switch(CHARACTER_TYPE.get(element)){
+            case NUMBER:
+                // start number state
+                currState = State.SNUMBER;
+                tkValue += element;
+                break;
+            case QUOTE:
+                // start string state
+                currState = State.SSTRING;
+                tkValue += element;
+                break;
+            case WHITESPACE:
+                if (!tkValue.equals("")){
+                    // OPERATOR
+                    if (TK_OPERATORS.containsKey(tkValue)){
+                        createTk(TK_OPERATORS.get(tkValue));
+                        break;
+                    }
+                    // KEYWORD
+                    if (TK_KEYWORDS.containsKey(tkValue.toUpperCase())){
+                        createTk(TK_KEYWORDS.get(tkValue.toUpperCase()));
+                        break;
+                    }
+                    // not in any tables
+                    
+
+                }
+                break;
+            case OPERATOR:
+                // Equals
+                if (element.equals("=")){
+                    if (tkValue.equals(":")){
+                        createTk("TK_ASSIGNMENT");
+                    }
+                    else {
+                        createTk(TK_OPERATORS.get(element));
+                    }
+                    break;
+                }
+
+                // Star
+                if (element.equals("*")){
+                    if (tkValue.equals("(")){ 
+                        // start comment state
+                        currState = State.SCOMMENT;
+                        tkValue += element;
+                    }
+                    else {
+                        createTk(TK_OPERATORS.get(element));
+                    }
+                    break;
+                }
+
+                // Semicolon
+                if (element.equals(";")){
+                    if (TK_OPERATORS.containsKey(tkValue.toUpperCase())){
+                        // OPERATORS
+                        createTk(TK_KEYWORDS.get(tkValue.toUpperCase()));
+                    }
+                    else if (TK_KEYWORDS.containsKey(tkValue.toUpperCase())){
+                        // KEYWORDS
+                        createTk(TK_KEYWORDS.get(tkValue.toUpperCase()));
+                    }
+                    else {
+                        // IDENTIFIER TK
+                        createTk("TK_ID");
+                    }
+
+                    // Create SEMI TK
+                    createTk(TK_OPERATORS.get(element)); 
+                    break;
+                }
+
+                // Any other operate, create token
+                createTk(TK_OPERATORS.get(element));
+
+                break;
+            default:
+                // we have a letter 
+                tkValue += element;
+                break;
+        }
+
+    }
+
+
+
+
+
+    //----------------------------------------------
+    // TABLES
+    //
+    // Create & Populate a static final HashTable 
+    //----------------------------------------------
+    
+    // TYPE ----------------------------------------
+    //  Note:
+    //      Decided to put into hashmap instead of if statements 
+    //      because it is easier to add more special cases
+    private static final HashMap<String,Type> CHARACTER_TYPE;
+    static {
+        CHARACTER_TYPE = new HashMap<>();
+        
+        for (int i = 1; i <= 32; i++){
+            // populating WhiteSpaces
+            CHARACTER_TYPE.put(Character.toString((char) i), Type.WHITESPACE);
+        }
+        
+        for (int i = 48; i <= 57; i++){
+            // populating Numbers
+            CHARACTER_TYPE.put(Character.toString((char) i), Type.NUMBER);
+        }
+
+        for (int i = 65; i <= 90; i++){
+            // populating UpperCase Letters
+            CHARACTER_TYPE.put(Character.toString((char) i), Type.LETTER);
+        }
+        for (int i = 97; i <= 122; i++){
+            // populating LowerCase Letters
+            CHARACTER_TYPE.put(Character.toString((char) i), Type.LETTER);
+        }
+        
+
+        // populate Quote for String
+        CHARACTER_TYPE.put("'", Type.QUOTE);
+
+        // populate Operates
+        for (String key: TK_OPERATORS.keySet()){
+            CHARACTER_TYPE.put(key,Type.OPERATOR);
+        }
+
+    };
+    
+
+    // KEYWORDS -------------------------------------
     private static final HashMap<String,String> TK_KEYWORDS;
     static {
         

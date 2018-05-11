@@ -21,14 +21,9 @@
     - class to create objects that have a type and a value
 ### Parser.java
     - takes the encoded tokens (often as integers) for syntactic analysis
-    - 
-### TypeChecker.java
-    -
-### Translator.java
-    -
+    - understands the syntax of the language 
+    - creates a tree of nodes called the Abstract Syntax Tree (AST) 
 ### Optimizer.java
     - for our purposes this was not used
-### CodeGenerator.java
-    -
 ### SymbolTable.java
     -
