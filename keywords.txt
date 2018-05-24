@@ -4,6 +4,7 @@ array
 asm  
 begin  
 case  
+char
 const  
 constructor  
 destructor  
@@ -20,6 +21,7 @@ if
 implementation  
 in  
 inherited  
+integer
 inline  
 interface  
 label  
@@ -33,10 +35,12 @@ or
 packed  
 procedure  
 program  
+real
 record  
 reintroduce  
 repeat  
 self  
+string
 set  
 shl  
 shr  

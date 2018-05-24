@@ -10,6 +10,7 @@ import java.io.*;
 public final class Compiler{
 
     public static void main(String args[]){
+
         // Make sure something is passed as an arg
         if (args.length == 0){
             System.out.println("Please provide source code...");
@@ -17,19 +18,35 @@ public final class Compiler{
             System.exit(0);
         }
 
-        // Create the lexer class
-        Lexer test = new Lexer();
-        
         // Make sure the file exists
         try{
             
-            System.out.println("Getting Your File...");
+            // LEXER
+           // System.out.println("Getting Your File...");
             // Convert the File to tokens and store in ArrayList
-            ArrayList<Token> tkList = test.scan(new File(args[0]));
+            ArrayList<Token> tkList = Lexer.scan(new File(args[0]));
             // Print tklist
-            for (Token tk : tkList){
-                System.out.println(tk.getTkType()+" "+tk.getTkValue());
-            }
+           // System.out.println("--------PRINTING TKLIST----------");
+          //  for (Token tk : tkList){
+            //    System.out.println(tk.getTkType()+" "+tk.getTkValue());
+           // }
+
+            // PARSER
+            //System.out.println("Parsing...");
+            Byte[] instructions = Parser.parse(tkList);
+            // Print instructions
+            //System.out.println("----------PRINTING INSTRUCTIONS--------");
+           // for (Byte i : instructions){
+             //   if (i != null){
+              //  System.out.println(i);
+               // }
+
+            //}
+
+            // GENERATOR
+            //System.out.println("Generating...");
+            Generator.generate(instructions);
+
         }
         catch(IOException e){
             System.out.println("Unable to find source code file...");
@@ -37,9 +54,6 @@ public final class Compiler{
             System.exit(0);
         }
 
-        // Pass TokenList to Parser
-        System.out.println("Parsing...");
-    
     };
 
 }
